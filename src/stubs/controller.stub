@@ -7,6 +7,7 @@ use DummyRootNamespaceHttp\Controllers\Controller;
 
 use DummyRootNamespace{{modelNamespace}}{{modelName}};
 use Illuminate\Http\Request;
+use Yajra\Datatables\Datatables;
 use Session;
 
 class DummyClass extends Controller
@@ -18,16 +19,17 @@ class DummyClass extends Controller
      */
     public function index(Request $request)
     {
-        $keyword = $request->get('search');
-        $perPage = {{pagination}};
+        return view('{{viewPath}}{{crudName}}.index');
+    }
 
-        if (!empty($keyword)) {
-            ${{crudName}} = {{modelName}}::{{whereSnippet}}paginate($perPage);
-        } else {
-            ${{crudName}} = {{modelName}}::paginate($perPage);
-        }
-
-        return view('{{viewPath}}{{viewName}}.index', compact('{{crudName}}'));
+    public function data(){
+        ${{crudName}} = {{modelName}}::select('*');
+        return Datatables::of(${{crudName}})
+            ->addColumn('actions',function($item){
+                return $item->action_buttons;
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     /**
@@ -68,9 +70,9 @@ class DummyClass extends Controller
      */
     public function show($id)
     {
-        ${{crudNameSingular}} = {{modelName}}::findOrFail($id);
+        $item = {{modelName}}::findOrFail($id);
 
-        return view('{{viewPath}}{{viewName}}.show', compact('{{crudNameSingular}}'));
+        return view('{{viewPath}}{{viewName}}.show', compact('item'));
     }
 
     /**

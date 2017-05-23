@@ -3,9 +3,11 @@
 namespace DummyNamespace;
 
 use Illuminate\Database\Eloquent\Model;
+{{packages}}
 
 class DummyClass extends Model
 {
+    {{softDeletes}}
     /**
      * The database table used by the model.
      *
@@ -23,4 +25,32 @@ class DummyClass extends Model
     protected $fillable = {{fillable}};
 
     {{relationships}}
+
+    public function getViewButtonAttribute(){
+        return '<a class="btn btn-default btn-xs" href="'.route('admin.{{table}}.show', $this->id).'"><i class="fa fa-eye"></i></a>';
+    }
+
+    public function getEditButtonAttribute(){
+        return '<a class="btn btn-primary btn-xs" href="'.route('admin.{{table}}.edit', $this->id).'"><i class="fa fa-edit"></i></a>';
+    }
+
+    public function getDeleteButtonAttribute(){
+        return '<a class="btn btn-xs btn-danger" href="'.route('admin.{{table}}.destroy', $this->id).'" data-method="delete" name="delete_item"><i class="fa fa-trash"></i></a>';
+    }
+
+    public function getActionButtonsAttribute(){
+        $actions = "";
+        if(access()->allow('view-{{table}}')){
+            $actions.= $this->view_button;
+        }
+        if(access()->allow('update-{{table}}')){
+            $actions.= ' '.$this->edit_button;
+        }
+
+        if(access()->allow('delete-{{table}}')){
+            $actions.= ' '.$this->delete_button;
+        }
+
+        return $actions;
+    }
 }

@@ -1,7 +1,7 @@
-<div class="form-group {{ $errors->has('%1$s') ? 'has-error' : ''}}">
-    {!! Form::label('%1$s', %2$s, ['class' => 'col-md-4 control-label']) !!}
-    <div class="col-md-6">
+<div class="form-group {{ $errors->has('%1$s') ? 'has-error' : ''}} %4$s">
+    {!! Form::label('%1$s', %2$s, ['class' => 'control-label']) !!}
+    <div class="">
         %3$s
-        {!! $errors->first('%1$s', '<p class="help-block">:message</p>') !!}
     </div>
+    {!! $errors->first('%1$s', '<span class="help-block">:message</span>') !!}
 </div>

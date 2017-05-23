@@ -28,7 +28,8 @@ class CrudCommand extends Command
                             {--route-group= : Prefix of the route group.}
                             {--view-path= : The name of the view path.}
                             {--localize=no : Allow to localize? yes|no.}
-                            {--locales=en : Locales language type.}';
+                            {--locales=en : Locales language type.}
+                            {--soft-deletes= : Model SoftDeletes.}';
 
     /**
      * The console command description.
@@ -112,9 +113,11 @@ class CrudCommand extends Command
             $validations = $this->processJSONValidations($this->option('fields_from_file'));
         }
 
+        $softDeletes = $this->option('soft-deletes');
+
         $this->call('crud:controller', ['name' => $controllerNamespace . $name . 'Controller', '--crud-name' => $name, '--model-name' => $modelName, '--model-namespace' => $modelNamespace, '--view-path' => $viewPath, '--route-group' => $routeGroup, '--pagination' => $perPage, '--fields' => $fields, '--validations' => $validations]);
-        $this->call('crud:model', ['name' => $modelNamespace . $modelName, '--fillable' => $fillable, '--table' => $tableName, '--pk' => $primaryKey, '--relationships' => $relationships]);
-        $this->call('crud:migration', ['name' => $migrationName, '--schema' => $fields, '--pk' => $primaryKey, '--indexes' => $indexes, '--foreign-keys' => $foreignKeys]);
+        $this->call('crud:model', ['name' => $modelNamespace . $modelName, '--fillable' => $fillable, '--table' => $tableName, '--pk' => $primaryKey, '--relationships' => $relationships, '--soft-deletes'=>$softDeletes]);
+        $this->call('crud:migration', ['name' => $migrationName, '--schema' => $fields, '--pk' => $primaryKey, '--indexes' => $indexes, '--foreign-keys' => $foreignKeys, '--soft-deletes'=>$softDeletes]);
         $this->call('crud:view', ['name' => $name, '--fields' => $fields, '--validations' => $validations, '--view-path' => $viewPath, '--route-group' => $routeGroup, '--localize' => $localize, '--pk' => $primaryKey]);
         if ($localize == 'yes') {
             $this->call('crud:lang', ['name' => $name, '--fields' => $fields, '--locales' => $locales]);
@@ -149,7 +152,10 @@ class CrudCommand extends Command
      */
     protected function addRoutes()
     {
-        return ["Route::resource('" . $this->routeName . "', '" . $this->controller . "');"];
+        return [
+            "Route::resource('" . $this->routeName . "', '" . $this->controller . "');",
+            "Route::post('".$this->routeName."-data', '".$this->controller."@data');"
+        ];
     }
 
     /**
@@ -225,21 +231,16 @@ class CrudCommand extends Command
     {
         $json = File::get($file);
         $fields = json_decode($json);
-
         if (!property_exists($fields, 'relationships')) {
             return '';
         }
-
         $relationsString = '';
         foreach ($fields->relationships as $relation) {
             $relationsString .= $relation->name . '#' . $relation->type . '#' . $relation->class . ';';
         }
-
         $relationsString = rtrim($relationsString, ';');
-
         return $relationsString;
     }
-
     /**
      * Process the JSON Validations.
      *
@@ -251,18 +252,14 @@ class CrudCommand extends Command
     {
         $json = File::get($file);
         $fields = json_decode($json);
-
         if (!property_exists($fields, 'validations')) {
             return '';
         }
-
         $validationsString = '';
         foreach ($fields->validations as $validation) {
             $validationsString .= $validation->field . '#' . $validation->rules . ';';
         }
-
         $validationsString = rtrim($validationsString, ';');
-
         return $validationsString;
     }
 }

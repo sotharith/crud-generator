@@ -16,7 +16,8 @@ class CrudMigrationCommand extends GeneratorCommand
                             {--schema= : The name of the schema.}
                             {--indexes= : The fields to add an index too.}
                             {--foreign-keys= : Foreign keys.}
-                            {--pk=id : The name of the primary key.}';
+                            {--pk=id : The name of the primary key.}
+                            {--soft-deletes= : Models Soft Deletes }';
 
     /**
      * The console command description.
@@ -106,6 +107,7 @@ class CrudMigrationCommand extends GeneratorCommand
         $fieldsToIndex = trim($this->option('indexes')) != '' ? explode(',', $this->option('indexes')) : [];
         $foreignKeys = trim($this->option('foreign-keys')) != '' ? explode(',', $this->option('foreign-keys')) : [];
 
+        $softDeletes = $this->option('soft-deletes');
         $schema = rtrim($this->option('schema'), ';');
         $fields = explode(';', $schema);
 
@@ -179,6 +181,10 @@ class CrudMigrationCommand extends GeneratorCommand
             }
 
             $schemaFields .= ";\n" . $tabIndent . $tabIndent . $tabIndent;
+        }
+
+        if(!empty($softDeletes) && $softDeletes){
+            $schemaFields .= "\$table->softDeletes();\n". $tabIndent . $tabIndent . $tabIndent;
         }
 
         // foreign keys

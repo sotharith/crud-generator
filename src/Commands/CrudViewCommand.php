@@ -92,6 +92,7 @@ class CrudViewCommand extends Command
         'routePrefixCap',
         'routeGroup',
         'formHeadingHtml',
+        'formDatatableHtml',
         'formBodyHtml',
         'viewTemplateDir',
         'formBodyHtmlForShowView',
@@ -201,6 +202,12 @@ class CrudViewCommand extends Command
      * @var string
      */
     protected $formHeadingHtml = '';
+
+    /**
+     * list of datatable
+     * @var string
+     */
+    protected $formDatatableHtml = '';
 
     /**
      * Html of the form body.
@@ -333,12 +340,12 @@ class CrudViewCommand extends Command
             $field = $value['name'];
             $label = ucwords(str_replace('_', ' ', $field));
             if ($this->option('localize') == 'yes') {
-                $label = '{{ trans(\'' . $this->crudName . '.' . $field . '\') }}';
+                $label = '{{ trans(\'meta.' . $this->crudName . '.' . $field . '\') }}';
             }
             $this->formHeadingHtml .= '<th>' . $label . '</th>';
             $this->formBodyHtml .= '<td>{{ $item->' . $field . ' }}</td>';
             $this->formBodyHtmlForShowView .= '<tr><th> ' . $label . ' </th><td> {{ $%%crudNameSingular%%->' . $field . ' }} </td></tr>';
-
+            $this->formDatatableHtml .="{data: '$field', name:'".strtolower(str_plural($this->modelName)).".$field'},\n\t\t\t";
             $i++;
         }
 
@@ -355,7 +362,7 @@ class CrudViewCommand extends Command
     private function defaultTemplating()
     {
         return [
-            'index' => ['formHeadingHtml', 'formBodyHtml', 'crudName', 'crudNameCap', 'modelName', 'viewName', 'routeGroup', 'primaryKey'],
+            'index' => ['formHeadingHtml', 'formDatatableHtml', 'formBodyHtml', 'crudName', 'crudNameCap', 'modelName', 'viewName', 'routeGroup', 'primaryKey'],
             'form' => ['formFieldsHtml'],
             'create' => ['crudName', 'crudNameCap', 'modelName', 'modelNameCap', 'viewName', 'routeGroup', 'viewTemplateDir'],
             'edit' => ['crudName', 'crudNameSingular', 'crudNameCap', 'modelNameCap', 'modelName', 'viewName', 'routeGroup', 'primaryKey', 'viewTemplateDir'],
@@ -436,12 +443,16 @@ class CrudViewCommand extends Command
         $formGroup = File::get($this->viewDirectoryPath . 'form-fields/wrap-field.blade.stub');
 
         $labelText = "'" . ucwords(strtolower(str_replace('_', ' ', $item['name']))) . "'";
-
-        if ($this->option('localize') == 'yes') {
-            $labelText = 'trans(\'' . $this->crudName . '.' . $item['name'] . '\')';
+        $requireClass = "";
+        if($item['required']){
+            $requireClass = "class-required";
         }
 
-        return sprintf($formGroup, $item['name'], $labelText, $field);
+        if ($this->option('localize') == 'yes') {
+            $labelText = 'trans(\'meta.' . $this->crudName . '.' . $item['name'] . '\')';
+        }
+
+        return sprintf($formGroup, $item['name'], $labelText, $field, $requireClass);
     }
 
     /**

@@ -1,35 +1,71 @@
-@extends('layouts.app')
-
+@extends ('backend.layouts.app')
+@section ('title', trans('meta.label.create').' %%modelName%%')
+@section('after-styles')
+@endsection
 @section('content')
-    <div class="container">
-        <div class="row">
-            @include('admin.sidebar')
-
-            <div class="col-md-9">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Create New %%modelName%%</div>
-                    <div class="panel-body">
-                        <a href="{{ url('/%%routeGroup%%%%viewName%%') }}" title="Back"><button class="btn btn-warning btn-xs"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button></a>
-                        <br />
-                        <br />
-
-                        @if ($errors->any())
-                            <ul class="alert alert-danger">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        @endif
-
-                        {!! Form::open(['url' => '/%%routeGroup%%%%viewName%%', 'class' => 'form-horizontal', 'files' => true]) !!}
-
-                        @include ('%%viewTemplateDir%%.form')
-
-                        {!! Form::close() !!}
-
-                    </div>
-                </div>
-            </div>
+<div class="box box-primary">
+    <div class="box-header with-border">
+        <h3 class="box-title">{{trans('meta.labels.create')}} %%modelName%%</h3>
+    </div><!-- /.box-header -->
+    {!! Form::open(['url' => '%%routeGroup%%%%crudName%%', 'role' => 'form', 'id'=>'form-data']) !!}
+        <div class="box-body">
+            %%formFieldsHtml%%
+        </div><!-- /.box-body -->
+        <div class="box-footer">
+            <a href="javascript:void(0);" onclick="history.back(-1)" class="btn btn-default">
+                <i class="fa fa-times"></i>&nbsp;
+                {{trans('meta.buttons.cancel')}}
+            </a>
+            <button type="submit" class="btn btn-primary pull-right">
+                <i class="fa fa-save"></i>&nbsp;
+                {{trans('meta.buttons.create')}}
+            </button>
         </div>
-    </div>
+    {!! Form::close() !!}
+</div><!-- /.box -->
+@endsection
+@section('after-scripts')
+        <!--
+         //Copy this script into your global javascript file or on each form that you want to validate on require field
+        $(document).on('focusout', '.form-control[required]', function (e) {
+            if ($(this).val() == '' || $(this).val() == null) {
+                $(this).closest('.class-required').addClass('has-error');
+                $(this).closest('div').after(function () {
+                    return "<span class='help-block'>You can't leave this empty.</span>";
+                })
+            }
+        });
+        $(document).on('focusin', '.form-control[required]', function (e) {
+            var closestParent = $(this).closest('.class-required');
+            if (closestParent.hasClass('has-error')) {
+                closestParent.removeClass('has-error');
+                $(this).closest('div').nextAll().remove();
+            }
+        });
+        $(document).on('submit', '#form-data', function (e) {
+            var isFormReady = true;
+            $('#form-data .form-control[required]').each(function () {
+                if ($(this).val() == '' || $(this).val() == null) {
+                    $(this).trigger('focusin');
+                    $(this).trigger('focusout');
+                    isFormReady = false;
+                }
+            });
+
+            if(!isFormReady){
+                e.preventDefault();
+            }
+        });
+
+        var unsaved = false;
+        $(document).on('change', '#form-data .form-control', function(){
+           unsaved = true;
+        });
+
+        $(window).bind('beforeunload', function(e){
+            if(unsaved){
+                return 'You have unsaved changes on this page. Do you want to leave this page and discard your changes or stay on this page?';
+            }
+        });
+        -->
 @endsection

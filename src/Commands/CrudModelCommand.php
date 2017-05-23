@@ -16,7 +16,8 @@ class CrudModelCommand extends GeneratorCommand
                             {--table= : The name of the table.}
                             {--fillable= : The names of the fillable columns.}
                             {--relationships= : The relationships for the model}
-                            {--pk=id : The name of the primary key.}';
+                            {--pk=id : The name of the primary key.}
+                            {--soft-deletes= : Model Soft Deletes.}';
 
     /**
      * The console command description.
@@ -82,11 +83,25 @@ class CrudModelCommand extends GeneratorCommand
 EOD;
 
         }
+        $softDeletes = $this->option('soft-deletes');
+        $packages = "";
+        if(!empty($softDeletes) && $softDeletes){
+            $packages = <<<EOD
+use Illuminate\Database\Eloquent\SoftDeletes;
+EOD;
+
+            $softDeletes = <<<EOD
+use SoftDeletes;
+EOD;
+
+        }
 
         $ret = $this->replaceNamespace($stub, $name)
             ->replaceTable($stub, $table)
             ->replaceFillable($stub, $fillable)
-            ->replacePrimaryKey($stub, $primaryKey);
+            ->replacePrimaryKey($stub, $primaryKey)
+            ->replacePackages($stub, $packages)
+            ->replaceSoftDeletes($stub, $softDeletes);
 
         foreach ($relationships as $rel) {
             // relationshipname#relationshiptype#args_separated_by_pipes
@@ -199,6 +214,24 @@ EOD;
     protected function replaceRelationshipPlaceholder(&$stub)
     {
         $stub = str_replace('{{relationships}}', '', $stub);
+        return $this;
+    }
+
+    /**
+     * inject soft deletes into models
+     * @param $stub
+     */
+    protected function replaceSoftDeletes(&$stub, $softDeletes){
+        $stub = str_replace('{{softDeletes}}', $softDeletes, $stub);
+        return $this;
+    }
+
+    /**
+     * inject packages dependency into models
+     * @param $stub
+     */
+    protected function replacePackages(&$stub, $packages){
+        $stub = str_replace('{{packages}}', $packages, $stub);
         return $this;
     }
 }
